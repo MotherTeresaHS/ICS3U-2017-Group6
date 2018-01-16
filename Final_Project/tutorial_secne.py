@@ -1,15 +1,15 @@
-# this is tutorial scene 
 
-# Created by: Mr. Coxall
-# Created on: Sep 2016
+
+# Created by: Alireza Teimoori
+# Created on: Jan 2018
 # Created for: ICS3U
-# This scene shows the main menu.
+# This scene is tutorial scene and shows the tutorial 
 
 from scene import *
 import ui
+from main_menu_scene import *
 
-
-class MainMenuScene(Scene):
+class TutorialScene(Scene):
     def setup(self):
         # this method is called, when user moves to this scene
         
@@ -18,6 +18,18 @@ class MainMenuScene(Scene):
                                      color = '#222222', 
                                      parent = self, 
                                      size = self.size)
+        
+        self.tutorial_image = SpriteNode('./assets/sprites/tutorial_image.png',
+                                         position = self.size/2,
+                                         parent = self,
+                                         size = self.size)
+        
+        back_button_position = self.size
+        back_button_position.x = 100
+        back_button_position.y = back_button_position.y - 100
+        self.back_button = SpriteNode('./assets/sprites/back_button.png',
+                                       parent = self,
+                                       position = back_button_position)
         
     
     def update(self):
@@ -34,7 +46,11 @@ class MainMenuScene(Scene):
     
     def touch_ended(self, touch):
         # this method is called, when user releases a finger from the screen
-        pass
+        
+        
+        # if start button is pressed, goto game scene
+        if self.back_button.frame.contains_point(touch.location):
+            self.dismiss_modal_scene()
     
     def did_change_size(self):
         # this method is called, when user changes the orientation of the screen

@@ -24,17 +24,17 @@ class SecondSplashScene(Scene):
                                      color = "#979b2e", 
                                      parent = self, 
                                      size = self.size)
-        self.app_logo = SpriteNode('./assets/sprites/user_spaceship.png',
+        self.app_logo = SpriteNode('./assets/sprites/splash_image.png',
                                        parent = self,
                                        position = self.size/2,
-                                       size = self.size/5)
+                                       size = self.size)
     
     def update(self):
         # this method is called, hopefully, 60 times a second
         
         # after 2 seconds, move to main menu scene
         if not self.presented_scene and time.time() - self.start_time > 1 :
-            self.present_modal_scene(GameScene())
+            self.present_modal_scene(MainMenuScene())
             
     
     def touch_began(self, touch):

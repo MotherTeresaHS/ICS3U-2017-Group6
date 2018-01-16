@@ -1,20 +1,22 @@
 # This is the scene that user gets to play in it
 
-# Created by: Mr. Coxall
-# Created on: Sep 2016
+# Created by: Alireza Teimoori
+# Created on: Jan 2018
 # Created for: ICS3U
+
 # This scene shows the game_scene.
 
 from scene import *
 import ui
 from numpy import random
 from game_over_scene import *
+import config
+import sound
 
 class GameScene(Scene):
     
     def setup(self):
         # this method is called, when user moves to this scene
-        
         
         
         
@@ -24,19 +26,21 @@ class GameScene(Scene):
         self.screen_center_y = self.size_of_screen_y/2
         
         
+        
         self.spacecubes = []
         self.spacecube_attack_rate = 1.0
-        self.spacecube_attack_speed = 20
+        self.spacecube_attack_speed = 24
         
         
         self.rarecubes = []
         self.rarecube_attack_rate = 1.0
-        self.rarecube_attack_speed = 30
+        self.rarecube_attack_speed = 12
         
         
         self.lasers = []
         
-        self.score = 0
+        
+        self.user_lives = 3
         
         
         # add background
@@ -48,6 +52,7 @@ class GameScene(Scene):
         
         space_ship_position=self.size/2
         space_ship_position.y=100
+        
         self.space_ship=SpriteNode('./assets/sprites/user_spaceship.png',
                                    position=space_ship_position,
                                    parent=self,
@@ -60,13 +65,42 @@ class GameScene(Scene):
         fire_button_position = Vector2()
         fire_button_position.x = self.size_of_screen_x - 100
         fire_button_position.y = 100
+        
         self.fire_button = SpriteNode('./assets/sprites/fire_button.png',
                                       parent = self,
                                       position = fire_button_position,
                                       alpha = 0.5,
                                       scale = 0.25)
         
-        return self.size_of_screen_x, self.size_of_screen_y, self.screen_center_x, self.screen_center_y
+        
+        
+        self.score_position = Vector2()
+        self.score_position.x = 80
+        self.score_position.y = self.size_of_screen_y - 50
+        
+        self.score_label = LabelNode(text = 'Score: ',
+                                     parent = self,
+                                     position = self.score_position)
+                                     
+        
+        
+        self.highscore_position = Vector2()
+        self.highscore_position.x = 80
+        self.highscore_position.y = self.size_of_screen_y -150
+        
+        self.highscore_label = LabelNode(text = 'Highscore: ' + str(config.highscore),
+                                         parent = self,
+                                         position = self.highscore_position)
+        
+        
+        self.lives_position = Vector2()
+        self.lives_position.x = 80
+        self.lives_position.y = self.size_of_screen_y - 100
+        
+        self.lives_label = LabelNode(text = 'Lives: x  x  x',
+                                   parent = self,
+                                   position = self.lives_position)
+                                   
         
         
     
@@ -87,7 +121,7 @@ class GameScene(Scene):
         
         if space_cube_number == 1:
         
-            self.spacecubes.append(SpriteNode('./assets/sprites/green_spacecube.png',
+            self.spacecubes.append(SpriteNode(texture = './assets/sprites/green_spacecube.png',
                                  position = spacecube_start_position,
                                  parent = self,
                                  scale = 0.25))
@@ -96,7 +130,7 @@ class GameScene(Scene):
             spacecube_lives = 1
         
         elif space_cube_number == 2:
-            self.spacecubes.append(SpriteNode('./assets/sprites/blue_spacecube.png',
+            self.spacecubes.append(SpriteNode(texture = './assets/sprites/blue_spacecube.png',
                                  position = spacecube_start_position,
                                  parent = self,
                                  scale = 0.03))
@@ -106,7 +140,7 @@ class GameScene(Scene):
             spacecube_lives = 2
             
         elif space_cube_number == 3:
-            self.spacecubes.append(SpriteNode('./assets/sprites/red_spacecube.png',
+            self.spacecubes.append(SpriteNode(texture = './assets/sprites/red_spacecube.png',
                                  position = spacecube_start_position,
                                  parent = self,
                                  scale = 0.35))
@@ -161,7 +195,7 @@ class GameScene(Scene):
         space_cube_number = random.randint(1,3)
         spacecube_create_chance = random.randint(1, 200)
         
-        if spacecube_create_chance <= self.spacecube_attack_rate:
+        if spacecube_create_chance <= self.spacecube_attack_rate and config.game_over == False :
             #space_cubes.SpaceCubes.create_new_spacecube(space_cubes.SpaceCubes(), space_cube_number)
             self.create_new_spacecube()
         
@@ -169,6 +203,10 @@ class GameScene(Scene):
             if space_cube.position.y < -50:
                 space_cube.remove_from_parent()
                 self.spacecubes.remove(space_cube)
+                
+                config.score = config.score - 2000
+                if config.score < 0:
+                    config.score = 0
                 # you might want to end the game, or take points away
         
         ################################################################
@@ -180,7 +218,7 @@ class GameScene(Scene):
         
         rarecube_create_chance = random.randint(1, 1400)
         
-        if rarecube_create_chance <= self.rarecube_attack_rate:
+        if rarecube_create_chance <= self.rarecube_attack_rate and config.game_over == False:
             #space_cubes.SpaceCubes.create_new_spacecube(space_cubes.SpaceCubes(), space_cube_number)
             self.create_new_rarecube()
         
@@ -215,6 +253,21 @@ class GameScene(Scene):
             for space_cube in self.spacecubes:
                 for laser in self.lasers:
                     if space_cube.frame.contains_rect(laser.frame):
+                        
+                        if space_cube.scale == 0.25:
+                            # green
+                            config.score = config.score + 250
+                            #print(config.score )
+                        elif space_cube.scale == 0.03:
+                            # blue
+                            config.score = config.score  + 325
+                            #print(config.score )
+                        elif space_cube.scale == 0.35:
+                            # red
+                            config.score = config.score + 475
+                            #print(config.score)
+                        
+                        
                         laser.remove_from_parent()
                         self.lasers.remove(laser)
                         
@@ -222,7 +275,6 @@ class GameScene(Scene):
                         self.spacecubes.remove(space_cube)
                         # since you destroyed one, make more show up
                         self.spacecube_attack_rate = self.spacecube_attack_rate + 0.1
-                        
                         
          
          ################################################################
@@ -243,13 +295,11 @@ class GameScene(Scene):
                         self.rarecubes.remove(rare_cube)
                         # since you destroyed one, make more show up
                         self.rarecube_attack_rate = self.rarecube_attack_rate + 0.1
-                        
+                        config.score = config.score + 3000
                         
         
         ################################################################
-        else:
-            pass
-            
+        
         
         #####
         # check every update to see alien touches spaceship
@@ -262,17 +312,76 @@ class GameScene(Scene):
                 #print('ship  ->' + str(self.spaceship.frame))
                 if spacecube_hit.frame.intersects(self.space_ship.frame):
                     #print('a hit')
-                    self.space_ship.remove_from_parent()
+                    #self.space_ship.remove_from_parent()
+                    
+                    #self.dismiss_modal_scene()
+                    
+                    if config.fx_sound_on == True:
+                        
+                        sound.play_effect('./assets/sounds/BarrelExploding.wav')
+                        
+                    
                     spacecube_hit.remove_from_parent()
                     self.spacecubes.remove(spacecube_hit)
-                    self.present_modal_scene(GameOverScene())
+                    self.user_lives = self.user_lives - 1
+                    #print(self.user_lives)
+                    
                     # since game over, move to next scene
                     
                 
             
         
         ################################################################
-    
+        
+        
+        #####
+        # Show user lives
+        #####
+        
+        
+        if self.user_lives == 3:
+            if self.lives_label.text != "Lives: o  o  o":
+                self.lives_label.text = 'Lives: o  o  o'
+        elif self.user_lives == 2:
+            if self.lives_label.text != "Lives: o o ":
+                    self.lives_label.text = "Lives: o o "
+        elif self.user_lives == 1:
+                if self.lives_label.text != "Lives: o " :
+                    self.lives_label.text = "Lives: o "
+        
+        ################################################################
+        
+        #####
+        # Show user score and highscore
+        #####
+        
+        if self.score_label.text != 'Score: ' + str(config.score):
+            self.score_label.text = 'Score: ' + str(config.score)
+        
+        ###
+        
+        if config.score > config.highscore:
+            config.highscore = config.score
+            if self.highscore_label.text != 'Highscore: ' + str(config.highscore):
+                self.highscore_label.text = 'Highscore: ' + str(config.highscore)
+                
+            
+        
+        ################################################################
+        
+        #####
+        # Check if game is over or not
+        #####
+        
+        if self.user_lives <= 0 :
+            if config.game_over != True:
+                config.game_over = True
+                #print("game over")
+                self.dismiss_modal_scene()
+                
+        
+        ################################################################
+        
     def touch_began(self, touch):
         # this method is called, when user touches the screen
         pass
@@ -317,6 +426,11 @@ class GameScene(Scene):
         self.lasers.append(SpriteNode('./assets/sprites/laser.png',
                              position = laser_start_position,
                              parent = self))
+        
+        if config.fx_sound_on == True:
+            
+            sound.play_effect('./assets/sounds/laser1.wav')
+            
         
         # make missile move forward
         laserMoveAction = Action.move_to(laser_end_position.x, 
